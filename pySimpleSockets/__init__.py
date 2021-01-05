@@ -27,9 +27,9 @@ class Server:
     def _onDisconnectCallback(self, addr):
         for callback in self.disconnectCallbacks:
             callback(addr)
-    def _onMessageCallback(self, addr, conn):
+    def _onMessageCallback(self, addr, conn, msg):
         for callback in self.messageCallbacks:
-            callback(addr, conn)
+            callback(addr, conn, msg)
     
     def onConnect(self, callback, args, kwargs):
         self.connectCallbacks.append(
@@ -43,8 +43,8 @@ class Server:
         )
     def onMessage(self, callback, args, kwargs):
         self.messageCallbacks.append(
-            lambda addr, conn: \
-            callback(addr, conn, *args, **kwargs)
+            lambda addr, conn, msg: \
+            callback(addr, conn, msg, *args, **kwargs)
         )
     
     def sendTo(self, conn, message):
@@ -53,23 +53,40 @@ class Server:
         conn.send(sendMsgLen)
         conn.send(message.encode(self.FORMAT))
     
+    def __client_thread(self, addr, conn):
+        clientConnected = True
+        while self.running and clientConnected:
+            msg_size = int(\
+                self.server.recv(self.HEADER)\
+                .decode(self.FORMAT)
+                )
+            msg = self.server.recv(msg)
+            self._onMessageCallback(addr, conn, msg)
+    
     def __handle_thread_start(self):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind(self.ADDR)
+        import threading
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(self.ADDR)
         self.running = True
-        server.listen()
-        server.settimeout(1)
+        self.server.listen()
         while self.running:
-            conn, addr = server.accept()
+            conn, addr = self.server.accept()
             self._onConnectCallback(addr, conn)
             print("Connection!")
+            clientThread = threading.Thread(target=self.__client_thread, args=(addr, conn))
+            clientThread.start()
     
     def start(self, onThread = True):
         if onThread:
             import threading
             thread = threading.Thread(
-                target = self.__handle_thread_start()
+                target = self.__handle_thread_start
             )
             thread.start()
         else:
             self.__handle_thread_start()
+
+if __name__ == '__main__':
+    svr = Server(socket.gethostbyname(socket.gethostname()), 6050, 16)
+    print(svr.SIP)
+    svr.start()
