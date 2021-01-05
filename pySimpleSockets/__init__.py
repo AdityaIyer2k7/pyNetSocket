@@ -58,9 +58,11 @@ class Server:
         server.bind(self.ADDR)
         self.running = True
         server.listen()
+        server.settimeout(1)
         while self.running:
             conn, addr = server.accept()
             self._onConnectCallback(addr, conn)
+            print("Connection!")
     
     def start(self, onThread = True):
         if onThread:
