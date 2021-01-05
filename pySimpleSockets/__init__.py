@@ -60,6 +60,7 @@ class Server:
         server.listen()
         while self.running:
             conn, addr = server.accept()
+            self._onConnectCallback(addr, conn)
     
     def start(self, onThread = True):
         if onThread:
