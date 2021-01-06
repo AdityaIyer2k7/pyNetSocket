@@ -43,3 +43,12 @@ class BaseSocketConnector:
             lambda addr, conn, msg:\
             callback(addr, conn, msg, *args, **kwargs)
         )
+    
+    
+    def sendTo(self, conn, msg):
+        msgLen = str(len(msg))
+        msgLenSized = msgLen + ' '*(self.HEADER - len*msgLen)
+        msgLenSend = msgLenSized.encode(self.FORMAT)
+        msgSend = msg.encode(self.FORMAT)
+        conn.send(msgLenSend)
+        conn.send(msgSend)
