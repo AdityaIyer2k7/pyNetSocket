@@ -1,23 +1,31 @@
 import socket
 
-class Server:
+class BaseSocket:
     def __init__(self,
             IP, PORT,
             HEADER,
             FORMAT='utf-8',
             DISCONNECT='!Disconnect'):
         def setup():
-            self.SIP = IP
+            self.IP = IP
             self.PORT = PORT
             self.ADDR = (IP, PORT)
             self.HEADER = HEADER
             self.FORMAT = FORMAT
             self.DISCONNECT = DISCONNECT
+        setup()
+
+class Server(BaseSocket):
+    def __init__(self,
+            IP, PORT,
+            HEADER,
+            FORMAT='utf-8',
+            DISCONNECT='!Disconnect'):
+        super().__init__(IP, PORT, HEADER, FORMAT, DISCONNECT)
         def makeCallbacks():
             self.connectCallbacks = []
             self.disconnectCallbacks = []
             self.messageCallbacks = []
-        setup()
         makeCallbacks()
         self.running = False
     
@@ -86,7 +94,15 @@ class Server:
         else:
             self.__handle_thread_start()
 
+class Client(BaseSocket):
+    def __init__(self,
+            IP, PORT,
+            HEADER,
+            FORMAT='utf-8',
+            DISCONNECT='!Disconnect'):
+        super().__init__(IP, PORT, HEADER, FORMAT, DISCONNECT)
+
 if __name__ == '__main__':
     svr = Server(socket.gethostbyname(socket.gethostname()), 6050, 16)
-    print(svr.SIP)
+    print(svr.ADDR)
     svr.start()
