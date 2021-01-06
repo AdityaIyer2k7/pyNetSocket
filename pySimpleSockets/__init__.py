@@ -28,6 +28,7 @@ class Server(BaseSocket):
             self.messageCallbacks = []
         makeCallbacks()
         self.running = False
+        self.conns = []
     
     def _onConnectCallback(self, addr, conn):
         for callback in self.connectCallbacks:
@@ -44,7 +45,7 @@ class Server(BaseSocket):
             lambda addr, conn: \
             callback(addr, conn, *args, **kwargs)
         )
-    def onDicconnect(self, callback, args:tuple = (), kwargs:dict = {}) -> None:
+    def onDiscconnect(self, callback, args:tuple = (), kwargs:dict = {}) -> None:
         self.disconnectCallbacks.append(
             lambda addr: \
             callback(addr, *args, **kwargs)
@@ -66,7 +67,10 @@ class Server(BaseSocket):
         while self.running and clientConnected:
             msgLen = int(conn.recv(self.HEADER).decode(self.FORMAT))
             msg = conn.recv(msgLen).decode(self.FORMAT)
+            if msg == self.DISCONNECT:
+                clientConnected = False
             self._onMessageCallback(addr, conn, msg)
+        conn.close()
     def __handle_thread_start(self):
         import threading
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -75,6 +79,7 @@ class Server(BaseSocket):
         self.server.listen()
         while self.running:
             conn, addr = self.server.accept()
+            self.conns.append(conn)
             self._onConnectCallback(addr, conn)
             print("[SERVER]\tConnection!")
             clientThread = threading.Thread(target=self.__client_thread, args=(addr, conn))
@@ -88,6 +93,10 @@ class Server(BaseSocket):
             thread.start()
         else:
             self.__handle_thread_start()
+    def stop(self):
+        for conn in self.conns:
+            self.sendTo(conn, self.DISCONNECT)
+        self.running = False
 
 class Client(BaseSocket):
     def __init__(self,
@@ -121,6 +130,8 @@ class Client(BaseSocket):
         while self.connected:
             msgLen = int(self.client.recv(self.HEADER).decode(self.FORMAT))
             msg = self.client.recv(msgLen).decode(self.FORMAT)
+            if msg == self.dISCONNECT:
+                self.disconnect()
             self._onMessageCallback(msg)
     def __handle_thread_connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -135,9 +146,14 @@ class Client(BaseSocket):
             thread.start()
         else:
             self.__handle_thread_connect()
+    def disconnect(self):
+        self.send(self.DISCONNECT)
+        self.connected = False
 
 if __name__ == '__main__':
+    svr = None
     def startServerTest():
+        global svr
         svr = Server(socket.gethostbyname(socket.gethostname()), 6050, 16)
         svr.onConnect(lambda addr, conn, *_, **__: print("[CLIENT]\t" + str(addr)))
         svr.onConnect(lambda addr, conn: svr.sendTo(conn, "Hello from server!"))
@@ -154,5 +170,7 @@ if __name__ == '__main__':
         while client.client == None:
             pass
         client.send("Hello")
+        client.disconnect()
     startServerTest()
     startClientTest()
+    svr.stop()
