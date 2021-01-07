@@ -1,8 +1,14 @@
 import threading
 import socket
 
+
 sock_family = socket.AF_INET
 sock_type = socket.SOCK_STREAM
+
+def getThisIP():
+    return socket.gethostbyname(
+        socket.gethostname()
+    )
 
 class BaseSocketConnector:
     def __init__(self,
@@ -45,14 +51,14 @@ class BaseSocketConnector:
             callback(addr, *args, **kwargs)
         )
     def onMessage(self, callback, args:tuple = (), kwargs:dict = {}):
-        self.messagCallbacks.append(
+        self.messageCallbacks.append(
             lambda addr, conn, msg:\
             callback(addr, conn, msg, *args, **kwargs)
         )
         
     def sendTo(self, conn, msg):
         msgLen = str(len(msg))
-        msgLenSized = msgLen + ' '*(self.HEADER - len*msgLen)
+        msgLenSized = msgLen + ' '*(self.HEADER - len(msgLen))
         msgLenSend = msgLenSized.encode(self.FORMAT)
         msgSend = msg.encode(self.FORMAT)
         conn.send(msgLenSend)
@@ -61,8 +67,6 @@ class BaseSocketConnector:
         msgLen = int(conn.recv(self.HEADER).decode(self.FORMAT))
         return conn.recv(msgLen).decode(self.FORMAT)
 
-
-
 class Server(BaseSocketConnector):
     def __init__(self,
         IP, PORT,
@@ -70,17 +74,22 @@ class Server(BaseSocketConnector):
         FORMAT='utf-8',
         DISCONNECT='!disconnect'):
         super().__init__(IP,PORT,HEADER,FORMAT,DISCONNECT)
-#        self.server = None
         self.running = False
+        self.server = None
     
-    def activateServer(self):
+    def _activateServer(self):
         self.server = socket.socket(sock_family, sock_type)
         self.server.bind(self.ADDR)
     
-    def _listenForMsg(self, addr, conn):
+    def _listenForMsg(self, addr, conn:socket.socket):
         clientConnected = True
         while self.running and clientConnected:
             msg = self.recvMsg(conn)
+            self._messageCallback(addr, conn, msg)
+            if msg == self.DISCONNECT:
+                clientConnected = False
+        conn.close()
+        self._disconnectCallback(addr)
     def _serverStart(self):
         self.server.listen()
         while self.running:
@@ -89,10 +98,11 @@ class Server(BaseSocketConnector):
                 target=self._listenForMsg,
                 args=(addr, conn)
             )
+            listenerThread.start()
             self._connectCallback(addr, conn)
     
     def start(self, onThread = True):
-        self.activateServer()
+        self._activateServer()
         self.running = True
         if onThread:
             serverThread = threading.Thread(
@@ -101,3 +111,54 @@ class Server(BaseSocketConnector):
             serverThread.start()
         else:
             self._serverStart()
+
+class Client(BaseSocketConnector):
+    def __init__(self,
+        IP, PORT,
+        HEADER=16,
+        FORMAT='utf-8',
+        DISCONNECT='!disconnect'):
+        super().__init__(IP, PORT, HEADER, FORMAT, DISCONNECT)
+        self.connected = False
+        self.server = None
+    
+    def _activateClient(self):
+        self.server = socket.socket(sock_family, sock_type)
+        self.server.connect(self.ADDR)
+    
+    def send(self, msg):
+        if self.server != None:
+            self.sendTo(self.server, msg)
+    def listen(self):
+        while self.connected:
+            msg = self.recvMsg(self.server)
+            self._messageCallback(self.ADDR, self.server, msg)
+            if msg == self.DISCONNECT:
+                self.sendTo(self.server, self.DISCONNECT)
+                self.connected = False
+        self.server.close()
+        self._disconnectCallback(self.ADDR)
+    def connect(self, onThread=True):
+        self._activateClient()
+        self._connectCallback(self.ADDR, self.server)
+        self.connected = True
+        if onThread:
+            listenerThread = threading.Thread(
+                target=self.listen
+            )
+        else:
+            self.listen()
+
+
+if __name__ == "__main__":
+    svr = Server(getThisIP(), 6050)
+    # breakpoint()
+    svr.onMessage(lambda addr, conn, msg:\
+        print(f"[SERVER]{addr} {msg}") )
+    svr.start()
+    print(svr.ADDR)
+    cli = Client(getThisIP(), 6050)
+    cli.connect()
+    # breakpoint()
+    cli.send(cli.DISCONNECT)
+    cli.send("Am I disconnected?")
