@@ -1,3 +1,9 @@
+import threading
+import socket
+
+sock_family = socket.AF_INET
+sock_type = socket.SOCK_STREAM
+
 class BaseSocketConnector:
     def __init__(self,
         IP, PORT,
@@ -43,8 +49,7 @@ class BaseSocketConnector:
             lambda addr, conn, msg:\
             callback(addr, conn, msg, *args, **kwargs)
         )
-    
-    
+        
     def sendTo(self, conn, msg):
         msgLen = str(len(msg))
         msgLenSized = msgLen + ' '*(self.HEADER - len*msgLen)
@@ -52,3 +57,47 @@ class BaseSocketConnector:
         msgSend = msg.encode(self.FORMAT)
         conn.send(msgLenSend)
         conn.send(msgSend)
+    def recvMsg(self, conn:socket.socket):
+        msgLen = int(conn.recv(self.HEADER).decode(self.FORMAT))
+        return conn.recv(msgLen).decode(self.FORMAT)
+
+
+
+class Server(BaseSocketConnector):
+    def __init__(self,
+        IP, PORT,
+        HEADER=16,
+        FORMAT='utf-8',
+        DISCONNECT='!disconnect'):
+        super().__init__(IP,PORT,HEADER,FORMAT,DISCONNECT)
+#        self.server = None
+        self.running = False
+    
+    def activateServer(self):
+        self.server = socket.socket(sock_family, sock_type)
+        self.server.bind(self.ADDR)
+    
+    def _listenForMsg(self, addr, conn):
+        clientConnected = True
+        while self.running and clientConnected:
+            msg = self.recvMsg(conn)
+    def _serverStart(self):
+        self.server.listen()
+        while self.running:
+            conn, addr = self.server.accept()
+            listenerThread = threading.Thread(
+                target=self._listenForMsg,
+                args=(addr, conn)
+            )
+            self._connectCallback(addr, conn)
+    
+    def start(self, onThread = True):
+        self.activateServer()
+        self.running = True
+        if onThread:
+            serverThread = threading.Thread(
+                target=self._serverStart
+            )
+            serverThread.start()
+        else:
+            self._serverStart()
