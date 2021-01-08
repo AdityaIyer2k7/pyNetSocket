@@ -7,7 +7,7 @@ It also uses the most basic client-server model
 
 To initialize a server:
 ```python
-from pySimpleSockets import Server
+from pySimSockets import Server
 
 myServer = Server(
     IP,
@@ -35,7 +35,7 @@ myServer.start(onThread=True)
 
 To initialize a client:
 ```python
-from pySimpleSockets import Client
+from pySimSockets import Client
 myClient = Client(
     IP,
     PORT,
