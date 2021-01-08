@@ -75,7 +75,8 @@ class Server(BaseSocketConnector):
         DISCONNECT='!disconnect'):
         super().__init__(IP,PORT,HEADER,FORMAT,DISCONNECT)
         self.running = False
-        #self.server = None
+        self.server = None
+        self.conns = []
     
     def _activateServer(self):
         self.server = socket.socket(sock_family, sock_type)
@@ -94,6 +95,7 @@ class Server(BaseSocketConnector):
         self.server.listen()
         while self.running:
             conn, addr = self.server.accept()
+            self.conns.append(conn)
             listenerThread = threading.Thread(
                 target=self._listenForMsg,
                 args=(addr, conn)
@@ -112,6 +114,10 @@ class Server(BaseSocketConnector):
             serverThread.start()
         else:
             self._serverStart()
+    def stop(self):
+        for conn in self.conns:
+            conn.close()
+        self.running = False
 
 class Client(BaseSocketConnector):
     def __init__(self,
@@ -157,7 +163,8 @@ class Client(BaseSocketConnector):
 
 if __name__ == "__main__":
     svr = Server(getThisIP(), 6050)
-    # breakpoint()
+    svr.onConnect(lambda addr, conn:\
+        print(f"[CONNECT]{addr}") )
     svr.onMessage(lambda addr, conn, msg:\
         print(f"[SERVER]{addr} {msg}") )
     svr.start()
@@ -166,10 +173,9 @@ if __name__ == "__main__":
     cli2 = Client(getThisIP(), 6050)
     cli1.connect()
     cli2.connect()
-    # breakpoint()
-    cli1.send("Hello!")
-    cli2.send("Hi!")
+    cli1.send("Client1")
+    cli2.send("Client2")
     cli1.disconnect()
     cli2.send("Bye bye")
     cli2.disconnect()
-    svr.running = False
+    svr.stop()
