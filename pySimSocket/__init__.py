@@ -75,7 +75,7 @@ class Server(BaseSocketConnector):
         DISCONNECT='!disconnect'):
         super().__init__(IP,PORT,HEADER,FORMAT,DISCONNECT)
         self.running = False
-        self.server = None
+        #self.server = None
     
     def _activateServer(self):
         self.server = socket.socket(sock_family, sock_type)
@@ -100,6 +100,7 @@ class Server(BaseSocketConnector):
             )
             listenerThread.start()
             self._connectCallback(addr, conn)
+        self.server.close()
     
     def start(self, onThread = True):
         self._activateServer()
