@@ -1,4 +1,4 @@
-# PySimpleSockets
+# PySimSockets
 ## A simple networking library for python
 ---
 This library uses the in-built `sockets` library
