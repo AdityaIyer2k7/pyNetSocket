@@ -13,16 +13,36 @@ myServer = Server(
     IP,
     PORT,
     FORMAT='utf-8',
-    DISCONNECT='!Disconnect'
+    HEADER=8
+    DISCONNECT='!disconnect'
 )
-myServer.start()
 
-def callback(conn, addr, *args):
+def connect(addr, conn):
     print(f"({addr}) connected")
 
-def disconnect(conn, addr, *args):
+def disconnect(addr):
     print(f"({addr}) disconnected")
 
-myServer.onConnect(callback, args=(), kwargs={})
+def message(addr, conn, msg):
+    print("[MESSAGE]", addr, msg)
+
+myServer.onConnect(connect, args=(), kwargs={})
+myServer.onMessage(message, args=(), kwargs={})
 myServer.onDicconnect(disconnect, args=(), kwargs={})
+
+myServer.start(onThread=True)
+```
+
+To initialize a client:
+```python
+from pySimpleSockets import Client
+myClient = Client(
+    IP,
+    PORT,
+    FORMAT='utf-8',
+    HEADER=8
+    DISCONNECT='!disconnect'
+)
+
+myClient.connect(onThread=True)
 ```
