@@ -1,8 +1,11 @@
 import setuptools
 
+with open('README.md') as fl:
+    l_desc = fl.read()
+
 setuptools.setup(
-    name="PySimpleSockets",
-    version="0.0.1",
+    name="PySimSockets",
+    version="1.0.0",
     author="DrSparky-2007",
     author_email="adityaiyer2007@gmail.com",
     description="A simple networking library for python",
