@@ -148,6 +148,10 @@ class Client(BaseSocketConnector):
             )
         else:
             self.listen()
+    def disconnect(self):
+        self.send(self.DISCONNECT)
+        self.connected = False
+        self._disconnectCallback(self.ADDR)
 
 
 if __name__ == "__main__":
@@ -157,8 +161,14 @@ if __name__ == "__main__":
         print(f"[SERVER]{addr} {msg}") )
     svr.start()
     print(svr.ADDR)
-    cli = Client(getThisIP(), 6050)
-    cli.connect()
+    cli1 = Client(getThisIP(), 6050)
+    cli2 = Client(getThisIP(), 6050)
+    cli1.connect()
+    cli2.connect()
     # breakpoint()
-    cli.send(cli.DISCONNECT)
-    cli.send("Am I disconnected?")
+    cli1.send("Hello!")
+    cli2.send("Hi!")
+    cli1.disconnect()
+    cli2.send("Bye bye")
+    cli2.disconnect()
+    svr.running = False
