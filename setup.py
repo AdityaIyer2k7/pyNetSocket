@@ -18,7 +18,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    keys=[
+    key=[
         'networking',
         'sockets',
         'simple networking',
