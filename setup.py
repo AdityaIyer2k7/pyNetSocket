@@ -4,8 +4,8 @@ with open('README.md') as fl:
     l_desc = fl.read()
 
 setuptools.setup(
-    name="pyNetSockets",
-    version="1.0.5",
+    name="pySocketNew",
+    version="1.0.6",
     author="DrSparky-2007",
     author_email="adityaiyer2007@gmail.com",
     description="A simple networking library for python",
