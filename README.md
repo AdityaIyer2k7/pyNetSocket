@@ -48,7 +48,7 @@ myClient.connect(onThread=True)
 ```
 
 Wiki link [here](https://github.com/DrSparky-2007/PyNetSocket/)
-Or try this https://github.com/DrSparky-2007/PyNetSocket/
+or try this https://github.com/DrSparky-2007/PyNetSocket/
 
 You can also view in-built documentation:
 ```python
