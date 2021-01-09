@@ -153,6 +153,7 @@ class Client(BaseSocketConnector):
             listenerThread = threading.Thread(
                 target=self.listen
             )
+            listenerThread.start()
         else:
             self.listen()
     def disconnect(self):
