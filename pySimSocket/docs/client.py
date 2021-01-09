@@ -1,6 +1,6 @@
 def importing():
     print('To import the client, type:',
-          'from pySimSocket import Client',
+          'from pyNetSocket import Client',
           sep='\n')
 
 def implement():

@@ -1,1 +1,1 @@
-print('The documentation for the pySimSocket library')
+print('The documentation for the pyNetSocket library')

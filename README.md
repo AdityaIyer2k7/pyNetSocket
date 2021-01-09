@@ -1,4 +1,4 @@
-# PySimSocket
+# pyNetSocket
 ## A simple networking library for python
 ---
 This library uses the in-built `sockets` library
@@ -7,7 +7,7 @@ It also uses the most basic client-server model
 
 To initialize a server:
 ```python
-from pySimSocket import Server
+from pyNetSocket import Server
 
 myServer = Server(
     IP,
@@ -35,7 +35,7 @@ myServer.start(onThread=True)
 
 To initialize a client:
 ```python
-from pySimSocket import Client
+from pyNetSocket import Client
 myClient = Client(
     IP,
     PORT,
