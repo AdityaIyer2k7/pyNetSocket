@@ -23,7 +23,8 @@ setuptools.setup(
         'sockets',
         'simple networking',
         'simple sockets',
-        'pyNetSockets'
+        'pyNetSockets',
+        'pyNetSocket'
     ],
     python_requires='>=3.6'
 )
