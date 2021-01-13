@@ -28,7 +28,7 @@ def message(addr, conn, msg):
 
 myServer.onConnect(connect, args=(), kwargs={})
 myServer.onMessage(message, args=(), kwargs={})
-myServer.onDicconnect(disconnect, args=(), kwargs={})
+myServer.onDisconnect(disconnect, args=(), kwargs={})
 
 myServer.start(onThread=True)
 ```
