@@ -116,7 +116,7 @@ class Server(BaseSocketConnector):
             self._serverStart()
     def stop(self):
         for conn in self.conns:
-            conn.close()
+            self.sendTo(conn, self.DISCONNECT)
         self.running = False
 
 class Client(BaseSocketConnector):
