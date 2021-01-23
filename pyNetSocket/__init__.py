@@ -30,15 +30,31 @@ class BaseSocketConnector:
         setConst()
         setCallbacks()
     
-    def _connectCallback(self, addr, conn):
+    def __connectCallbackRunner(self, addr, conn, *_):
         for callback in self.connectCallbacks:
             callback( addr, conn )
-    def _disconnectCallback(self, addr):
+    def __disconnectCallbackRunner(self, addr, *_):
         for callback in self.disconnectCallbacks:
             callback( addr )
-    def _messageCallback(self, addr, conn, msg):
+    def __messageCallbackRunner(self, addr, conn, msg, *_):
         for callback in self.messageCallbacks:
             callback( addr, conn, msg )
+    
+    def _connectCallback(self, addr, conn):
+        threading.Thread(
+            target=self.__connectCallbackRunner,
+            args=(addr, conn)
+        ).start()
+    def _disconnectCallback(self, addr):
+        threading.Thread(
+            target=self.__disconnectCallbackRunner,
+            args=(addr)
+        ).start()
+    def _messageCallback(self, addr, conn, msg):
+        threading.Thread(
+            target=self.__messageCallbackRunner,
+            args=(addr, conn, msg)
+        ).start()
     
     def onConnect(self, callback, args:tuple = (), kwargs:dict = {}):
         self.connectCallbacks.append(
@@ -64,8 +80,11 @@ class BaseSocketConnector:
         conn.send(msgLenSend)
         conn.send(msgSend)
     def recvMsg(self, conn:socket.socket):
-        msgLen = int(conn.recv(self.HEADER).decode(self.FORMAT))
-        return conn.recv(msgLen).decode(self.FORMAT)
+        msgLen = conn.recv(self.HEADER).decode(self.FORMAT)
+        if msgLen != '':
+            return conn.recv(int(msgLen)).decode(self.FORMAT)
+        else:
+            return ''
 
 class Server(BaseSocketConnector):
     def __init__(self,
