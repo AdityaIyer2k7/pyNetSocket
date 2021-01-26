@@ -5,7 +5,7 @@ with open('README.md') as fl:
 
 setuptools.setup(
     name="pyNetSocket",
-    version="1.0.7",
+    version="1.1.0",
     author="DrSparky-2007",
     author_email="adityaiyer2007@gmail.com",
     description="A simple networking library for python",
