@@ -95,7 +95,7 @@ class Server(BaseSocketConnector):
         super().__init__(IP,PORT,HEADER,FORMAT,DISCONNECT)
         self.running = False
         self.server = None
-        self.conns = []
+        self.conns = {}
     
     def _activateServer(self):
         self.server = socket.socket(sock_family, sock_type)
@@ -108,13 +108,14 @@ class Server(BaseSocketConnector):
             self._messageCallback(addr, conn, msg)
             if msg == self.DISCONNECT:
                 clientConnected = False
+        self.conns.pop(addr)
         conn.close()
         self._disconnectCallback(addr)
     def _serverStart(self):
         self.server.listen()
         while self.running:
             conn, addr = self.server.accept()
-            self.conns.append(conn)
+            self.conns[addr] = conn
             listenerThread = threading.Thread(
                 target=self._listenForMsg,
                 args=(addr, conn)
@@ -134,7 +135,7 @@ class Server(BaseSocketConnector):
         else:
             self._serverStart()
     def stop(self):
-        for conn in self.conns:
+        for conn in self.conns.values():
             self.sendTo(conn, self.DISCONNECT)
         self.running = False
 
