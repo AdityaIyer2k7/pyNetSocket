@@ -19,7 +19,6 @@ class BaseSocketConnector:
         def setConst():
             self.IP = IP
             self.PORT = PORT
-            self.ADDR = (IP, PORT)
             self.HEADER = HEADER
             self.FORMAT = FORMAT
             self.DISCONNECT = DISCONNECT
@@ -29,6 +28,10 @@ class BaseSocketConnector:
             self.messageCallbacks = []
         setConst()
         setCallbacks()
+    
+    @property
+    def ADDR(self):
+        return (self.IP, self.PORT)
     
     def __connectCallbackRunner(self, addr, conn, *_):
         for callback in self.connectCallbacks:
