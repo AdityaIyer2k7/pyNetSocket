@@ -5,13 +5,13 @@ with open('README.md') as fl:
 
 setuptools.setup(
     name="pyNetSocket",
-    version="1.1.2",
-    author="DrSparky-2007",
+    version="1.1.3",
+    author="DrSparky2k7",
     author_email="adityaiyer2007@gmail.com",
     description="A simple networking library for python",
     long_description=l_desc,
     long_description_content_type="text/markdown",
-    url="https://github.com/DrSparky-2007/PyNetSocket",
+    url="https://github.com/DrSparky2k7/PyNetSocket",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
