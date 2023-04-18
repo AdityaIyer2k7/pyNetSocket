@@ -11,7 +11,7 @@ def ondisconnect():
           'It will not get the connection object since the connection is closed',
           sep='\n')
 
-def onmessage()
+def onmessage():
     print('To add message-receive calbacks to a connector:',
           'myConnector.onMessage(CALLBACK, args=args, kwargs=kwargs)',
           'The function will be given the address, connection object, message, and then the args and kwargs',
