@@ -25,7 +25,7 @@ try:
         'Exit'
     ]
     while True:
-        print("Topics:".
+        print("Topics:",
               *topics,
               sep='\n\t')
         topic = input("> ").lower()
